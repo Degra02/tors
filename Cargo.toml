@@ -1,0 +1,15 @@
+[package]
+name = "tors"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+dotenv = "0.15.0"
+serde = { version = "1.0.200", features = ["derive"] }
+serde_json = "1.0.116"
+termion = "3.0.0"
+text_io = "0.1.12"
+yansi = "1.0.1"
