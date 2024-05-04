@@ -1,4 +1,4 @@
-use std::{collections::HashSet, env, fs::File, io::Read};
+use std::{collections::HashSet, fs::File, io::Read, iter::zip};
 
 use inquire::{autocompletion::Replacement, Autocomplete, CustomUserError};
 use serde::{Deserialize, Serialize};
@@ -47,6 +47,9 @@ pub struct Storage {
     #[serde(skip)]
     path: String,
 
+    #[serde(skip)]
+    lcp: String,
+
     pub links: HashSet<OnionLink>,
 }
 
@@ -64,6 +67,13 @@ impl Storage {
                 entry.name
             ))),
         }
+    }
+
+    pub fn update_storage_file(&mut self) -> Result<(), crate::error::Error> {
+        let mut file = File::create(&self.path)?;
+        to_writer(&mut file, &self)?;
+
+        Ok(())
     }
 
     pub fn update_input(&mut self, pattern: &str) -> Result<(), CustomUserError> {
@@ -86,6 +96,30 @@ impl Storage {
 
         Ok(())
     }
+
+    pub fn longest_common_prefix(&self) -> String {
+        let mut ret = String::new();
+
+        let mut sorted = self.names_list.clone();
+        sorted.sort();
+        if sorted.is_empty() {
+            return ret;
+        }
+
+        let first_word = sorted.first().unwrap().chars();
+        let last_word = sorted.last().unwrap().chars();
+
+        for (c1, c2) in zip(first_word, last_word) {
+            if c1 == c2 {
+                ret.push(c1);
+            } else {
+                return ret;
+            }
+        }
+
+        ret
+    }
+
 }
 
 impl Autocomplete for Storage {
@@ -103,7 +137,10 @@ impl Autocomplete for Storage {
 
         Ok(match highlighted_suggestion {
             Some(sugg) => Replacement::Some(sugg),
-            None => Replacement::None,
+            None => match self.lcp.is_empty() {
+                true => Replacement::None,
+                false => Replacement::Some(self.lcp.clone()),
+            }
         })
     }
 }
