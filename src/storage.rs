@@ -93,6 +93,7 @@ impl Storage {
             .collect();
 
         self.names_list = list;
+        self.longest_common_prefix();
 
         Ok(())
     }
@@ -106,20 +107,17 @@ impl Storage {
             return ret;
         }
 
-        let first_word = sorted.first().unwrap().chars();
-        let last_word = sorted.last().unwrap().chars();
-
-        for (c1, c2) in zip(first_word, last_word) {
-            if c1 == c2 {
-                ret.push(c1);
-            } else {
-                return ret;
+        let mut first_word = sorted.first().unwrap().chars();
+        let mut last_word = sorted.last().unwrap().chars();
+        loop {
+            match (first_word.next(), last_word.next()) {
+                (Some(c1), Some(c2)) if c1 == c2 => {
+                    ret.push(c1);
+                }
+                _ => return ret,
             }
         }
-
-        ret
     }
-
 }
 
 impl Autocomplete for Storage {
@@ -140,7 +138,7 @@ impl Autocomplete for Storage {
             None => match self.lcp.is_empty() {
                 true => Replacement::None,
                 false => Replacement::Some(self.lcp.clone()),
-            }
+            },
         })
     }
 }

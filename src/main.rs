@@ -1,14 +1,16 @@
-use core::panic;
 use clap::Parser;
 use cli::Cli;
+use core::panic;
 use error::Error;
 use inquire::{
-    error::InquireResult, ui::{Attributes, Color, RenderConfig, StyleSheet, Styled}, Confirm, Text
+    error::InquireResult,
+    ui::{Attributes, Color, RenderConfig, StyleSheet, Styled},
+    Confirm, Text,
 };
 use storage::{OnionLink, Storage};
 use wl_clipboard_rs::copy::{MimeType, Options, Source};
-use yansi::Paint;
 use yansi::Color as TColor;
+use yansi::Paint;
 
 mod cli;
 mod error;
@@ -41,7 +43,7 @@ fn main() -> Result<(), Error> {
             cli::Command::Remove => remove_prompt(&mut storage)?,
             cli::Command::List => list_links(&storage),
         },
-        None => search_prompt(storage)?
+        None => search_prompt(storage)?,
     }
 
     Ok(())
@@ -67,7 +69,11 @@ fn search_prompt(storage: Storage) -> Result<(), Error> {
             #[cfg(feature = "wayland")]
             copy_to_clipboard(&link)?;
 
-            println!("{} 󰁕 {}", link_name.bold().fg(TColor::BrightGreen), link.italic());
+            println!(
+                "{} 󰁕 {}",
+                link_name.bold().fg(TColor::BrightGreen),
+                link.italic()
+            );
         }
         Err(err) => println!("Error with storage: {err:?}"),
     }
@@ -101,7 +107,7 @@ fn update_prompt(storage: &mut Storage) -> Result<(), Error> {
 
     storage.links.clone().iter().for_each(|onion_link| {
         if onion_link.name == name {
-            let _ = storage.links.take(onion_link).expect("Not found!"); 
+            let _ = storage.links.take(onion_link).expect("Not found!");
             let new_onion = OnionLink::new(&name, &new_link);
             if storage.add_entry(new_onion).is_ok() {
                 println!("{} updated!", name.bold().fg(TColor::BrightGreen));
@@ -124,9 +130,13 @@ fn remove_prompt(storage: &mut Storage) -> Result<(), Error> {
                 .prompt();
 
             if let Ok(true) = decision {
-                storage.links.remove(onion_link); 
+                storage.links.remove(onion_link);
                 if storage.update_storage_file().is_ok() {
-                    println!("{} {} removed!", "".bold().fg(TColor::Green), name.bold().fg(TColor::BrightGreen))
+                    println!(
+                        "{} {} removed!",
+                        "".bold().fg(TColor::Green),
+                        name.bold().fg(TColor::BrightGreen)
+                    )
                 }
             }
         }
@@ -137,15 +147,22 @@ fn remove_prompt(storage: &mut Storage) -> Result<(), Error> {
 
 fn list_links(storage: &Storage) {
     for onion_link in storage.links.iter() {
-        println!("{} 󰁕 {}", onion_link.name.bold().fg(TColor::BrightGreen), onion_link.link.italic());
-    }     
+        println!(
+            "{} 󰁕 {}",
+            onion_link.name.bold().fg(TColor::BrightGreen),
+            onion_link.link.italic()
+        );
+    }
 }
 
 #[cfg(feature = "wayland")]
 fn copy_to_clipboard(link: &str) -> Result<(), Error> {
     let opts = Options::new();
-    opts.copy(Source::Bytes(link.to_string().into_bytes().into()), MimeType::Autodetect)?;
-    
+    opts.copy(
+        Source::Bytes(link.to_string().into_bytes().into()),
+        MimeType::Autodetect,
+    )?;
+
     println!("Copied to clipboard!");
 
     Ok(())
@@ -158,12 +175,13 @@ fn get_render_config() -> RenderConfig<'static> {
     render_config.scroll_up_prefix = Styled::new("⇞");
     render_config.scroll_down_prefix = Styled::new("⇟");
 
-    render_config.selected_option = Some(StyleSheet::new()
-        .with_attr(Attributes::BOLD)
-        .with_fg(Color::DarkYellow));
+    render_config.selected_option = Some(
+        StyleSheet::new()
+            .with_attr(Attributes::BOLD)
+            .with_fg(Color::DarkYellow),
+    );
 
-    render_config.option = StyleSheet::new()
-        .with_attr(Attributes::ITALIC);
+    render_config.option = StyleSheet::new().with_attr(Attributes::ITALIC);
 
     render_config.error_message = render_config
         .error_message

@@ -1,4 +1,3 @@
-
 #[derive(Debug)]
 pub enum Error {
     Inquire(inquire::InquireError),
@@ -7,7 +6,7 @@ pub enum Error {
     Other(String),
 
     #[cfg(feature = "wayland")]
-    WlCopy(wl_clipboard_rs::copy::Error)
+    WlCopy(wl_clipboard_rs::copy::Error),
 }
 
 impl From<serde_json::Error> for Error {

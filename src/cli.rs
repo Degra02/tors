@@ -1,29 +1,33 @@
 use clap::{Parser, Subcommand};
 
-
 /// Manage and search locally stored associations between human-readable names and onion (.onion) website links.
 #[derive(Debug, Subcommand, Default)]
 pub enum Command {
     /// Search for a .onion by name [default]
     #[default]
+    #[clap(visible_alias = "s")]
     Search,
 
-    /// Create a [name, .onion] association
+    /// Create a new association
+    #[clap(visible_alias = "c")]
     Create,
 
-    /// Update a [name, .onion] association
+    /// Update an existing association
+    #[clap(visible_alias = "u")]
     Update,
 
-    /// Remove a [name, .onion] association
+    /// Remove an existing association
+    #[clap(visible_alias = "r")]
     Remove,
 
     /// List all stored associations
-    List
+    #[clap(visible_alias = "l")]
+    List,
 }
 
 #[derive(Parser)]
 pub struct Cli {
     /// Default: search
     #[clap(subcommand)]
-    pub command: Option<Command>
+    pub command: Option<Command>,
 }

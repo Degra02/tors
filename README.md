@@ -1,5 +1,4 @@
 # Tors  
-### SUPER WIP (the code is bad)
 This is a command-line tool written in Rust for managing and searching locally stored associations between human-readable names and onion (.onion) website links.
 
 Features
