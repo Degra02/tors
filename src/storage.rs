@@ -1,4 +1,4 @@
-use std::{collections::HashSet, fs::File, io::Read, iter::zip};
+use std::{collections::HashSet, fs::File, io::Read};
 
 use inquire::{autocompletion::Replacement, Autocomplete, CustomUserError};
 use serde::{Deserialize, Serialize};
@@ -93,7 +93,7 @@ impl Storage {
             .collect();
 
         self.names_list = list;
-        self.longest_common_prefix();
+        self.lcp = self.longest_common_prefix();
 
         Ok(())
     }
