@@ -1,18 +1,24 @@
 use core::panic;
-use std::{env, path::{Path, PathBuf}};
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 
 use clap::Parser;
 use cli::Cli;
-use inquire::{error::InquireResult, ui::{Attributes, Color, RenderConfig, StyleSheet, Styled}, Text};
+use inquire::{
+    error::InquireResult,
+    ui::{Attributes, Color, RenderConfig, StyleSheet, Styled},
+    Text,
+};
 use storage::{OnionLink, Storage};
 
-mod storage;
-mod error;
 mod cli;
+mod error;
+mod storage;
 
 #[cfg(test)]
 mod tests;
-
 
 fn main() {
     let args = Cli::parse();
@@ -33,23 +39,25 @@ fn main() {
     } else {
         let _ = search_prompt(storage);
     }
-
 }
 
 pub fn search_prompt(storage: Storage) -> InquireResult<()> {
     inquire::set_global_render_config(get_render_config());
     let storage_clone = storage.clone();
 
-    let link_res = Text::new("Name:")
-        .with_autocomplete(storage)
-        .prompt();
+    let link_res = Text::new("Name:").with_autocomplete(storage).prompt();
 
     match link_res {
         Ok(link_name) => {
-            let link = storage_clone.links.iter().find(|l| l.name.to_lowercase() == link_name).map(|l| l.link.clone()).unwrap_or(" ".to_string());
+            let link = storage_clone
+                .links
+                .iter()
+                .find(|l| l.name.to_lowercase() == link_name)
+                .map(|l| l.link.clone())
+                .unwrap_or(" ".to_string());
             println!("{} 󰁕 {}", link_name, link);
         }
-        Err(err) => println!("Error with storage: {err:?}")
+        Err(err) => println!("Error with storage: {err:?}"),
     }
 
     Ok(())
@@ -58,10 +66,13 @@ pub fn search_prompt(storage: Storage) -> InquireResult<()> {
 pub fn create_prompt(storage: &mut Storage) -> InquireResult<()> {
     inquire::set_global_render_config(get_render_config());
 
-    let new_name = Text::new("Name:")
-        .prompt()?.to_lowercase();
+    let new_name = Text::new("Name:").prompt()?.to_lowercase();
 
-    match storage.links.iter().any(|ol| ol.name.to_lowercase() == new_name) {
+    match storage
+        .links
+        .iter()
+        .any(|ol| ol.name.to_lowercase() == new_name)
+    {
         true => panic!("Name already present"),
         false => {}
     }
@@ -74,7 +85,6 @@ pub fn create_prompt(storage: &mut Storage) -> InquireResult<()> {
     Ok(())
 }
 
-
 fn get_render_config() -> RenderConfig<'static> {
     let mut render_config = RenderConfig::default();
     render_config.prompt_prefix = Styled::new("$").with_fg(Color::LightBlue);
@@ -82,7 +92,9 @@ fn get_render_config() -> RenderConfig<'static> {
     render_config.scroll_up_prefix = Styled::new("⇞");
     render_config.scroll_down_prefix = Styled::new("⇟");
 
-    render_config.error_message = render_config.error_message.with_prefix(Styled::new("❌").with_fg(Color::LightRed));
+    render_config.error_message = render_config
+        .error_message
+        .with_prefix(Styled::new("❌").with_fg(Color::LightRed));
     render_config.answer = StyleSheet::new()
         .with_attr(Attributes::ITALIC)
         .with_fg(Color::LightYellow);

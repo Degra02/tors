@@ -6,7 +6,6 @@ use serde_json::to_writer;
 
 use crate::error::Error;
 
-
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct OnionLink {
     pub name: String,
@@ -37,7 +36,6 @@ impl PartialEq for OnionLink {
 
 impl Eq for OnionLink {}
 
-
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
 pub struct Storage {
     #[serde(skip)]
@@ -61,7 +59,10 @@ impl Storage {
 
                 Ok(())
             }
-            false => Err(Error::from(format!("Link with name {} already present\n", entry.name))),
+            false => Err(Error::from(format!(
+                "Link with name {} already present\n",
+                entry.name
+            ))),
         }
     }
 
@@ -74,19 +75,18 @@ impl Storage {
         self.input = pattern.to_owned();
         self.names_list.clear();
 
-        let list: Vec<String> = self.links
+        let list: Vec<String> = self
+            .links
             .iter()
             .filter(|&l| l.name.to_lowercase().contains(&pattern))
             .map(|l| l.name.clone().to_lowercase())
             .collect();
-        
+
         self.names_list = list;
 
         Ok(())
     }
-
 }
-
 
 impl Autocomplete for Storage {
     fn get_suggestions(&mut self, input: &str) -> Result<Vec<String>, CustomUserError> {

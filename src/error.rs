@@ -2,7 +2,7 @@
 pub enum Error {
     Serde(serde_json::Error),
     Io(std::io::Error),
-    Other(String)
+    Other(String),
 }
 
 impl From<serde_json::Error> for Error {
