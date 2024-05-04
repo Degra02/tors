@@ -9,3 +9,23 @@ Features
 - Offline functionality: Works without an internet connection (searches local data).
 
 Note: This tool does not access the dark web or retrieve information from onion links. It solely manages user-provided associations for easier access to bookmarked sites.
+
+# Usage
+The `storage.json` file is stored inside `~/.config/tors/storage.json`, so a   
+directory has to be created in order for it to work.  
+
+This is the help message from the tool
+```bash
+Usage: tors [COMMAND]
+
+Commands:
+  search  Search for a .onion by name
+  create  Create a [name, .onion] association
+  update  Update a [name, .onion] association
+  remove  Remove a [name, .onion] association
+  list    List all stored associations
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+```
