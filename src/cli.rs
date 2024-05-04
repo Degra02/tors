@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 /// Manage and search locally stored associations between human-readable names and onion (.onion) website links.
 #[derive(Debug, Subcommand, Default)]
 pub enum Command {
-    /// Search for a .onion by name
+    /// Search for a .onion by name [default]
     #[default]
     Search,
 
