@@ -3,7 +3,6 @@ use cli::Cli;
 use core::panic;
 use error::Error;
 use inquire::{
-    error::InquireResult,
     ui::{Attributes, Color, RenderConfig, StyleSheet, Styled},
     Confirm, Text,
 };
