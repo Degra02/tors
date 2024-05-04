@@ -29,3 +29,7 @@ Commands:
 Options:
   -h, --help  Print help
 ```
+
+## Additional features
+If built with `cargo build --release --features=wayland`, if on wayland
+when selecting an association the link will be copied to the clipboard [WIP]
