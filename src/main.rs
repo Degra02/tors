@@ -1,9 +1,8 @@
 use core::panic;
-use std::env;
+use std::{env, path::{Path, PathBuf}};
 
 use clap::Parser;
 use cli::Cli;
-use dotenv::dotenv;
 use inquire::{error::InquireResult, ui::{Attributes, Color, RenderConfig, StyleSheet, Styled}, Text};
 use storage::{OnionLink, Storage};
 
@@ -14,13 +13,15 @@ mod cli;
 #[cfg(test)]
 mod tests;
 
+
 fn main() {
-    dotenv().ok();
-
     let args = Cli::parse();
+    let mut home_dir = dirs::home_dir().unwrap();
+    home_dir.push(".config/tors/storage.json");
 
-    let path: String = env::var("STORAGE_FILE_PATH").unwrap();
-    let mut storage = match Storage::try_from(path.as_str()) {
+    let path = home_dir.to_str().unwrap();
+
+    let mut storage = match Storage::try_from(path) {
         Ok(st) => st,
         Err(_) => {
             panic!("storage.json file not found!");

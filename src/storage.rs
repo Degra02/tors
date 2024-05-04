@@ -46,15 +46,17 @@ pub struct Storage {
     #[serde(skip)]
     names_list: Vec<String>,
 
+    #[serde(skip)]
+    path: String,
+
     pub links: HashSet<OnionLink>,
 }
 
 impl Storage {
     pub fn add_entry(&mut self, entry: OnionLink) -> Result<(), crate::error::Error> {
-        let path = env::var("STORAGE_FILE_PATH").unwrap_or("./storage.json".to_string());
         match self.links.insert(entry.clone()) {
             true => {
-                let mut file = File::create(path)?;
+                let mut file = File::create(&self.path)?;
                 to_writer(&mut file, &self)?;
 
                 Ok(())
@@ -113,7 +115,8 @@ impl TryFrom<&str> for Storage {
         let mut file = File::open(path)?;
         let mut data = String::new();
         file.read_to_string(&mut data)?;
-        let storage: Storage = serde_json::from_str(&data)?;
+        let mut storage: Storage = serde_json::from_str(&data)?;
+        storage.path = path.to_owned();
         Ok(storage)
     }
 }
