@@ -11,8 +11,9 @@ Features
 Note: This tool does not access the dark web or retrieve information from onion links. It solely manages user-provided associations for easier access to bookmarked sites.
 
 # Usage
-The `storage.json` file is stored inside `~/.config/tors/storage.json`, so a   
-directory has to be created in order for it to work.  
+The `storage.json` file must be stored inside `~/.config/tors/storage.json`, so a   
+directory and the file have to be created in order for it to work.  
+Copy the file [storage.json](./storage.json) to `~/.config/tors` as is.
 
 This is the help message from the tool
 ```bash
