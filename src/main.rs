@@ -33,6 +33,11 @@ fn main() -> Result<(), Error> {
         }
     };
 
+    if args.name.is_some() {
+        search_prompt(storage, args.name)?;
+        return Ok(());
+    }
+
     match args.command {
         Some(command) => match command {
             cli::Command::Search { name }=> search_prompt(storage, name)?,
