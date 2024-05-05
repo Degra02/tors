@@ -167,14 +167,20 @@ fn update_prompt(mut storage: Storage) -> Result<(), Error> {
                     }
                 },
             );
-            if storage.add_entry(new_onion).is_ok() {
-                println!(
-                    "{} {} updated!",
-                    "".bold().fg(TColor::Green),
-                    name.bold().fg(TColor::BrightGreen)
-                );
-            } else {
-                println!("{} Could not update the entry!", "".bold().fg(TColor::Red));
+            let decision = Confirm::new("Confirm update?")
+                .with_default(true)
+                .prompt();
+            
+            if let Ok(true) = decision {
+                if storage.add_entry(new_onion).is_ok() {
+                    println!(
+                        "{} {} updated!",
+                        "".bold().fg(TColor::Green),
+                        name.bold().fg(TColor::BrightGreen)
+                    );
+                } else {
+                    println!("{} Could not update the entry!", "".bold().fg(TColor::Red));
+                }
             }
         }
     });
