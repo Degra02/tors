@@ -7,22 +7,27 @@ fn add_entries() {
     let e1 = OnionLink::new(
         "Dread",
         "http://dreadytofatroptsdj6io7l3xptbet6onoyno2yv7jicoxknyazubrad.onion",
+        None,
     );
     let e2 = OnionLink::new(
         "culo",
         "http://dreadytofatroptsdj6io7l3xptbet6onoyno2yv7jicoxknyazubrad.onion",
+        None,
     );
     let e3 = OnionLink::new(
         "store",
         "http://dreadytofatroptsdj6io7l3xptbet6onoyno2yv7jicoxknyazubrad.onion",
+        None,
     );
     let e4 = OnionLink::new(
         "bbc",
         "http://dreadytofatroptsdj6io7l3xptbet6onoyno2yv7jicoxknyazubrad.onion",
+        None,
     );
     let e5 = OnionLink::new(
         "news",
         "http://dreadytofatroptsdj6io7l3xptbet6onoyno2yv7jicoxknyazubrad.onion",
+        None,
     );
     let _ = storage.add_entry(e1);
     let _ = storage.add_entry(e2);

@@ -10,6 +10,8 @@ use crate::error::Error;
 pub struct OnionLink {
     pub name: String,
     pub link: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>
 }
 
 impl std::hash::Hash for OnionLink {
@@ -20,10 +22,11 @@ impl std::hash::Hash for OnionLink {
 }
 
 impl OnionLink {
-    pub fn new(name: &str, link: &str) -> Self {
+    pub fn new(name: &str, link: &str, tags: Option<Vec<String>>) -> Self {
         Self {
             name: name.to_string(),
             link: link.to_string(),
+            tags,
         }
     }
 }
@@ -88,7 +91,13 @@ impl Storage {
         let list: Vec<String> = self
             .links
             .iter()
-            .filter(|&l| l.name.to_lowercase().contains(&pattern))
+            .filter(|&l| l.name.to_lowercase().contains(&pattern)
+            || if let Some(tags) = &l.tags {
+                    tags.iter().any(|t| t.contains(&pattern)) 
+                } else {
+                    false
+                }
+            )
             .map(|l| l.name.clone().to_lowercase())
             .collect();
 
