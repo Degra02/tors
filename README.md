@@ -23,7 +23,7 @@ Commands:
   search  Search for a .onion by name [default] [aliases: s]
   create  Create a new association [aliases: c]
   update  Update an existing association [aliases: u]
-  remove  Remove an existing association [aliases: r]
+  delete  Delete an existing association [aliases: d]
   list    List all stored associations [aliases: l]
   help    Print this message or the help of the given subcommand(s)
 
