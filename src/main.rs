@@ -35,25 +35,29 @@ fn main() -> Result<(), Error> {
 
     match args.command {
         Some(command) => match command {
-            cli::Command::Search => search_prompt(storage)?,
+            cli::Command::Search { name }=> search_prompt(storage, name)?,
             cli::Command::Create => create_prompt(storage)?,
             cli::Command::Update => update_prompt(storage)?,
             cli::Command::Delete => delete_prompt(storage)?,
             cli::Command::List => list_links(&storage),
         },
-        None => search_prompt(storage)?,
+        None => search_prompt(storage, None)?,
     }
 
     Ok(())
 }
 
-fn search_prompt(storage: Storage) -> Result<(), Error> {
+fn search_prompt(storage: Storage, name_opt: Option<String>) -> Result<(), Error> {
     let storage_clone = storage.clone();
 
-    let query = Text::new(format!("{}:", "Name | Tags".bold().fg(TColor::Magenta)).as_str())
-        .with_autocomplete(storage)
-        .with_page_size(10)
-        .prompt()?;
+    let query = if let Some(name) = name_opt {
+        name
+    } else {
+        Text::new(format!("{}:", "Name | Tags".bold().fg(TColor::Magenta)).as_str())
+            .with_autocomplete(storage)
+            .with_page_size(10)
+            .prompt()?
+    };
 
     let (name, link) = storage_clone
         .links
