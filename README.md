@@ -20,11 +20,11 @@ This is the help message from the tool
 Usage: tors [COMMAND]
 
 Commands:
-  search  Search for a .onion by name
-  create  Create a [name, .onion] association
-  update  Update a [name, .onion] association
-  remove  Remove a [name, .onion] association
-  list    List all stored associations
+  search  Search for a .onion by name [default] [aliases: s]
+  create  Create a new association [aliases: c]
+  update  Update an existing association [aliases: u]
+  remove  Remove an existing association [aliases: r]
+  list    List all stored associations [aliases: l]
   help    Print this message or the help of the given subcommand(s)
 
 Options:
