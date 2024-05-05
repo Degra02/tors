@@ -39,7 +39,7 @@ fn main() -> Result<(), Error> {
             cli::Command::Search => search_prompt(storage)?,
             cli::Command::Create => create_prompt(&mut storage)?,
             cli::Command::Update => update_prompt(&mut storage)?,
-            cli::Command::Remove => remove_prompt(&mut storage)?,
+            cli::Command::Delete => delete_prompt(&mut storage)?,
             cli::Command::List => list_links(&storage),
         },
         None => search_prompt(storage)?,
@@ -51,7 +51,7 @@ fn main() -> Result<(), Error> {
 fn search_prompt(storage: Storage) -> Result<(), Error> {
     let storage_clone = storage.clone();
 
-    let query = Text::new("Name / Tags:")
+    let query = Text::new(format!("{}:", "Name / Tags".bold().fg(TColor::Magenta)).as_str())
         .with_autocomplete(storage)
         .with_page_size(10)
         .prompt()?;
@@ -67,33 +67,35 @@ fn search_prompt(storage: Storage) -> Result<(), Error> {
         .map(|l| (l.name.clone(), l.link.clone()))
         .unwrap_or((" ".to_string(), " ".to_string()));
 
-    #[cfg(feature = "wayland")]
-    copy_to_clipboard(&link)?;
+    if !query.is_empty() {
+        #[cfg(feature = "wayland")]
+        copy_to_clipboard(&link)?;
 
-    println!(
-        "{} 󰁕 {}",
-        name.bold().fg(TColor::BrightGreen),
-        link.italic()
-    );
+        println!(
+            "{} 󰁕 {}",
+            name.bold().fg(TColor::BrightGreen),
+            link.italic()
+        );
+    }
 
     Ok(())
 }
 
 fn create_prompt(storage: &mut Storage) -> Result<(), Error> {
-    let new_name = Text::new("Name:").prompt()?.to_lowercase();
+    let new_name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str()).prompt()?.to_lowercase();
 
     match storage
         .links
         .iter()
         .any(|ol| ol.name.to_lowercase() == new_name)
     {
-        true => panic!("Name already present"),
+        true => return Err(Error::Other("Name already present".to_string())),
         false => {}
     }
 
-    let link = Text::new("Link:").prompt()?.to_lowercase();
+    let link = Text::new(format!("{}:", "Link".bold().fg(TColor::Magenta)).as_str()).prompt()?.to_lowercase();
 
-    let tags: Vec<String> = Text::new("Tags:")
+    let tags: Vec<String> = Text::new(format!("{}:", "Tags".bold().fg(TColor::Magenta)).as_str())
         .with_help_message("write multiple tags separated by spaces")
         .prompt()?
         .to_lowercase()
@@ -118,12 +120,12 @@ fn create_prompt(storage: &mut Storage) -> Result<(), Error> {
 }
 
 fn update_prompt(storage: &mut Storage) -> Result<(), Error> {
-    let name = Text::new("Name:").prompt()?.to_lowercase();
-    let new_link = Text::new("New Link:")
+    let name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str()).prompt()?.to_lowercase();
+    let new_link = Text::new(format!("{}:", "New Link".bold().fg(TColor::Magenta)).as_str())
         .with_help_message("Leave empty if unchanged")
         .prompt()?;
-    let new_tags: Vec<String> = Text::new("New Tags:")
-        .with_help_message("write multiple tags separated by spaces, leave emtpy if unchanged")
+    let new_tags: Vec<String> = Text::new(format!("{}:", "New Tags".bold().fg(TColor::Magenta)).as_str())
+        .with_help_message("Write multiple tags separated by spaces, leave empty if unchanged")
         .prompt()?
         .to_lowercase()
         .split_whitespace()
@@ -147,7 +149,7 @@ fn update_prompt(storage: &mut Storage) -> Result<(), Error> {
                 }
             });
             if storage.add_entry(new_onion).is_ok() {
-                println!("{} updated!", name.bold().fg(TColor::BrightGreen));
+                println!("{} {} updated!", "".bold().fg(TColor::Green), name.bold().fg(TColor::BrightGreen));
             } else {
                 println!("{} Could not update the entry!", "".bold().fg(TColor::Red));
             }
@@ -157,8 +159,10 @@ fn update_prompt(storage: &mut Storage) -> Result<(), Error> {
     Ok(())
 }
 
-fn remove_prompt(storage: &mut Storage) -> Result<(), Error> {
-    let name = Text::new("Name:").prompt()?.to_lowercase();
+fn delete_prompt(storage: &mut Storage) -> Result<(), Error> {
+    let name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str())
+        .prompt()?
+        .to_lowercase();
 
     storage.links.clone().iter().for_each(|onion_link| {
         if onion_link.name == name {
@@ -170,7 +174,7 @@ fn remove_prompt(storage: &mut Storage) -> Result<(), Error> {
                 storage.links.remove(onion_link);
                 if storage.update_storage_file().is_ok() {
                     println!(
-                        "{} {} removed!",
+                        "{} {} deleted!",
                         "".bold().fg(TColor::Green),
                         name.bold().fg(TColor::BrightGreen)
                     )
@@ -221,8 +225,8 @@ fn get_render_config() -> RenderConfig<'static> {
     let mut render_config = RenderConfig::default();
     render_config.prompt_prefix = Styled::new("$").with_fg(Color::LightBlue);
     render_config.highlighted_option_prefix = Styled::new("󰁕").with_fg(Color::LightYellow);
-    render_config.scroll_up_prefix = Styled::new("⇞");
-    render_config.scroll_down_prefix = Styled::new("⇟");
+    render_config.scroll_up_prefix = Styled::new("");
+    render_config.scroll_down_prefix = Styled::new("");
 
     render_config.selected_option = Some(
         StyleSheet::new()

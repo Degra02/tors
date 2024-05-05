@@ -16,9 +16,9 @@ pub enum Command {
     #[clap(visible_alias = "u")]
     Update,
 
-    /// Remove an existing association
-    #[clap(visible_alias = "r")]
-    Remove,
+    /// Delete an existing association
+    #[clap(visible_alias = "d")]
+    Delete,
 
     /// List all stored associations
     #[clap(visible_alias = "l")]
