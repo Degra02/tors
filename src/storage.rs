@@ -11,7 +11,7 @@ pub struct OnionLink {
     pub name: String,
     pub link: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub tags: Option<Vec<String>>
+    pub tags: Option<Vec<String>>,
 }
 
 impl std::hash::Hash for OnionLink {
@@ -91,13 +91,14 @@ impl Storage {
         let list: Vec<String> = self
             .links
             .iter()
-            .filter(|&l| l.name.to_lowercase().contains(&pattern)
-            || if let Some(tags) = &l.tags {
-                    tags.iter().any(|t| t.contains(&pattern)) 
-                } else {
-                    false
-                }
-            )
+            .filter(|&l| {
+                l.name.to_lowercase().contains(&pattern)
+                    || if let Some(tags) = &l.tags {
+                        tags.iter().any(|t| t.contains(&pattern))
+                    } else {
+                        false
+                    }
+            })
             .map(|l| l.name.clone().to_lowercase())
             .collect();
 

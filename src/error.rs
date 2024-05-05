@@ -5,7 +5,7 @@ pub enum Error {
     Io(std::io::Error),
     Other(String),
 
-    #[cfg(feature = "wayland")]
+    #[cfg(feature = "clipboard")]
     WlCopy(wl_clipboard_rs::copy::Error),
 }
 
@@ -33,7 +33,7 @@ impl From<inquire::InquireError> for Error {
     }
 }
 
-#[cfg(feature = "wayland")]
+#[cfg(feature = "clipboard")]
 impl From<wl_clipboard_rs::copy::Error> for Error {
     fn from(value: wl_clipboard_rs::copy::Error) -> Self {
         Error::WlCopy(value)

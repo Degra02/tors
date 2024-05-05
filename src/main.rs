@@ -27,7 +27,7 @@ fn main() -> Result<(), Error> {
 
     let path = home_dir.to_str().unwrap();
 
-    let mut storage = match Storage::try_from(path) {
+    let storage = match Storage::try_from(path) {
         Ok(st) => st,
         Err(_) => {
             panic!("storage.json file not found!");
@@ -37,9 +37,9 @@ fn main() -> Result<(), Error> {
     match args.command {
         Some(command) => match command {
             cli::Command::Search => search_prompt(storage)?,
-            cli::Command::Create => create_prompt(&mut storage)?,
-            cli::Command::Update => update_prompt(&mut storage)?,
-            cli::Command::Delete => delete_prompt(&mut storage)?,
+            cli::Command::Create => create_prompt(storage)?,
+            cli::Command::Update => update_prompt(storage)?,
+            cli::Command::Delete => delete_prompt(storage)?,
             cli::Command::List => list_links(&storage),
         },
         None => search_prompt(storage)?,
@@ -51,7 +51,7 @@ fn main() -> Result<(), Error> {
 fn search_prompt(storage: Storage) -> Result<(), Error> {
     let storage_clone = storage.clone();
 
-    let query = Text::new(format!("{}:", "Name / Tags".bold().fg(TColor::Magenta)).as_str())
+    let query = Text::new(format!("{}:", "Name | Tags".bold().fg(TColor::Magenta)).as_str())
         .with_autocomplete(storage)
         .with_page_size(10)
         .prompt()?;
@@ -59,20 +59,23 @@ fn search_prompt(storage: Storage) -> Result<(), Error> {
     let (name, link) = storage_clone
         .links
         .iter()
-        .find(|l| l.name.to_lowercase() == query 
-            || if let Some(tags) = &l.tags {
-            tags.iter().any(|t| *t == query) 
-            } else { false }
-         )
+        .find(|l| {
+            l.name.to_lowercase() == query
+                || if let Some(tags) = &l.tags {
+                    tags.iter().any(|t| *t == query)
+                } else {
+                    false
+                }
+        })
         .map(|l| (l.name.clone(), l.link.clone()))
         .unwrap_or((" ".to_string(), " ".to_string()));
 
     if !query.is_empty() {
-        #[cfg(feature = "wayland")]
+        #[cfg(feature = "clipboard")]
         copy_to_clipboard(&link)?;
 
         println!(
-            "{} 󰁕 {}",
+            "{} \n{}",
             name.bold().fg(TColor::BrightGreen),
             link.italic()
         );
@@ -81,8 +84,10 @@ fn search_prompt(storage: Storage) -> Result<(), Error> {
     Ok(())
 }
 
-fn create_prompt(storage: &mut Storage) -> Result<(), Error> {
-    let new_name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str()).prompt()?.to_lowercase();
+fn create_prompt(mut storage: Storage) -> Result<(), Error> {
+    let new_name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str())
+        .prompt()?
+        .to_lowercase();
 
     match storage
         .links
@@ -93,7 +98,9 @@ fn create_prompt(storage: &mut Storage) -> Result<(), Error> {
         false => {}
     }
 
-    let link = Text::new(format!("{}:", "Link".bold().fg(TColor::Magenta)).as_str()).prompt()?.to_lowercase();
+    let link = Text::new(format!("{}:", "Link".bold().fg(TColor::Magenta)).as_str())
+        .prompt()?
+        .to_lowercase();
 
     let tags: Vec<String> = Text::new(format!("{}:", "Tags".bold().fg(TColor::Magenta)).as_str())
         .with_help_message("write multiple tags separated by spaces")
@@ -103,11 +110,7 @@ fn create_prompt(storage: &mut Storage) -> Result<(), Error> {
         .map(|s| s.to_string())
         .collect();
 
-    let tags = if tags.is_empty() {
-        None
-    } else {
-        Some(tags)
-    };
+    let tags = if tags.is_empty() { None } else { Some(tags) };
 
     let ol = OnionLink::new(&new_name, &link, tags);
     if storage.add_entry(ol).is_ok() {
@@ -119,37 +122,49 @@ fn create_prompt(storage: &mut Storage) -> Result<(), Error> {
     Ok(())
 }
 
-fn update_prompt(storage: &mut Storage) -> Result<(), Error> {
-    let name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str()).prompt()?.to_lowercase();
+fn update_prompt(mut storage: Storage) -> Result<(), Error> {
+    let name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str())
+        .with_autocomplete(storage.clone())
+        .prompt()?
+        .to_lowercase();
     let new_link = Text::new(format!("{}:", "New Link".bold().fg(TColor::Magenta)).as_str())
         .with_help_message("Leave empty if unchanged")
         .prompt()?;
-    let new_tags: Vec<String> = Text::new(format!("{}:", "New Tags".bold().fg(TColor::Magenta)).as_str())
-        .with_help_message("Write multiple tags separated by spaces, leave empty if unchanged")
-        .prompt()?
-        .to_lowercase()
-        .split_whitespace()
-        .map(|s| s.to_string())
-        .collect();
+    let new_tags: Vec<String> =
+        Text::new(format!("{}:", "New Tags".bold().fg(TColor::Magenta)).as_str())
+            .with_help_message("Write multiple tags separated by spaces, leave empty if unchanged")
+            .prompt()?
+            .to_lowercase()
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
 
     storage.links.clone().iter().for_each(|onion_link| {
-        if onion_link.name == name {
+        if onion_link.name.to_lowercase() == name {
             let _ = storage.links.take(onion_link).expect("Not found!");
-            let new_onion = OnionLink::new(&name, {
-                if new_link.is_empty() {
-                    &onion_link.link
-                } else {
-                    &new_link
-                }
-            }, {
-                if new_tags.is_empty() {
-                    onion_link.tags.clone()
-                } else {
-                    Some(new_tags.clone())
-                }
-            });
+            let new_onion = OnionLink::new(
+                &name,
+                {
+                    if new_link.is_empty() {
+                        &onion_link.link
+                    } else {
+                        &new_link
+                    }
+                },
+                {
+                    if new_tags.is_empty() {
+                        onion_link.tags.clone()
+                    } else {
+                        Some(new_tags.clone())
+                    }
+                },
+            );
             if storage.add_entry(new_onion).is_ok() {
-                println!("{} {} updated!", "".bold().fg(TColor::Green), name.bold().fg(TColor::BrightGreen));
+                println!(
+                    "{} {} updated!",
+                    "".bold().fg(TColor::Green),
+                    name.bold().fg(TColor::BrightGreen)
+                );
             } else {
                 println!("{} Could not update the entry!", "".bold().fg(TColor::Red));
             }
@@ -159,8 +174,9 @@ fn update_prompt(storage: &mut Storage) -> Result<(), Error> {
     Ok(())
 }
 
-fn delete_prompt(storage: &mut Storage) -> Result<(), Error> {
+fn delete_prompt(mut storage: Storage) -> Result<(), Error> {
     let name = Text::new(format!("{}:", "Name".bold().fg(TColor::Magenta)).as_str())
+        .with_autocomplete(storage.clone())
         .prompt()?
         .to_lowercase();
 
@@ -204,7 +220,7 @@ fn list_links(storage: &Storage) {
     }
 }
 
-#[cfg(feature = "wayland")]
+#[cfg(feature = "clipboard")]
 fn copy_to_clipboard(link: &str) -> Result<(), Error> {
     use wl_clipboard_rs::copy::ClipboardType;
 
@@ -213,7 +229,7 @@ fn copy_to_clipboard(link: &str) -> Result<(), Error> {
 
     opts.copy(
         Source::Bytes(link.to_string().into_bytes().into()),
-        MimeType::Text
+        MimeType::Text,
     )?;
 
     println!("Copied to clipboard!");
