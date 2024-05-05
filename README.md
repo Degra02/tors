@@ -32,5 +32,5 @@ Options:
 ```
 
 ## Additional features
-If built with `cargo build --release --features=wayland`, if on wayland
-when selecting an association the link will be copied to the clipboard [WIP]
+The `clipboard` feature adds the [arboard](https://github.com/1Password/arboard) crate,  
+that copies the selected entry to the clipboard
