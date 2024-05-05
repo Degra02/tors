@@ -6,7 +6,7 @@ pub enum Error {
     Other(String),
 
     #[cfg(feature = "clipboard")]
-    WlCopy(wl_clipboard_rs::copy::Error),
+    WlCopy(arboard::Error),
 }
 
 impl From<serde_json::Error> for Error {
@@ -34,8 +34,8 @@ impl From<inquire::InquireError> for Error {
 }
 
 #[cfg(feature = "clipboard")]
-impl From<wl_clipboard_rs::copy::Error> for Error {
-    fn from(value: wl_clipboard_rs::copy::Error) -> Self {
+impl From<arboard::Error> for Error {
+    fn from(value: arboard::Error) -> Self {
         Error::WlCopy(value)
     }
 }

@@ -7,7 +7,6 @@ use inquire::{
     Confirm, Text,
 };
 use storage::{OnionLink, Storage};
-use wl_clipboard_rs::copy::{MimeType, Options, Source};
 use yansi::Color as TColor;
 use yansi::Paint;
 
@@ -222,15 +221,8 @@ fn list_links(storage: &Storage) {
 
 #[cfg(feature = "clipboard")]
 fn copy_to_clipboard(link: &str) -> Result<(), Error> {
-    use wl_clipboard_rs::copy::ClipboardType;
-
-    let mut opts = Options::new();
-    opts.clipboard(ClipboardType::Regular);
-
-    opts.copy(
-        Source::Bytes(link.to_string().into_bytes().into()),
-        MimeType::Text,
-    )?;
+    let mut clipboard = arboard::Clipboard::new()?; 
+    clipboard.set_text(link)?;
 
     println!("Copied to clipboard!");
 
