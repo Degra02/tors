@@ -1,5 +1,5 @@
 # Tors 
-![logo](./logo.png | width=100)
+![](./logo.png | width=100)
 
 This is a command-line tool written in Rust for managing and searching locally stored associations between human-readable names and onion (.onion) website links.
 
