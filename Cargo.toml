@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-clipboard = []
+clipboard = ["dep:arboard"]
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
@@ -14,4 +14,4 @@ serde = { version = "1.0.200", features = ["derive"] }
 serde_json = "1.0.116"
 text_io = "0.1.12"
 yansi = "1.0.1"
-arboard = { version = "3.4.0", features = ["wayland-data-control"], optional = false }
+arboard = { version = "3.4.0", optional = true }
